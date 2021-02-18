@@ -9,14 +9,18 @@ contract ZombieFactory is Ownable {
     //declaring an event called "NewZombie" that passes (3) arguments: zombieId, name, dna
     event NewZombie(uint zombieId, string name, uint dna);
 
-    //declared two uint vars assigned to a certain value
+    //declared (3) uint vars assigned to a certain value
     uint dnaDigits = 16;
     uint dnaModulus = 10 ** dnaDigits;
+    uint cooldownTime = 1 days;
 
-    //creating a struct called "Zombie" w/ a name and dna variables
+    //creating a struct called "Zombie" w/ (4) types of data
+        //note: the uint32s are clustered at the end of the struct for better storage/gas efficiency
     struct Zombie {
         string name;
         uint dna;
+        uint32 level;
+        uint32 readyTime;
     }
     //creating a public dynamic array called "zombies"
     Zombie[] public zombies;
@@ -30,10 +34,11 @@ contract ZombieFactory is Ownable {
 //creating an **internal**  function called "_createZombie" w/ two arguments 
     function _createZombie(string memory _name, uint _dna) internal {
 
-        //puts the newly created Zombie into the "zombies" array along w/ its name & dna (?)
+        //puts the newly created Zombie along w/ its name, dna, level, readyTime 
+            //into the "zombies" array
         //the first index in the array is 0, so -1 (?)
         //assigning this array.push()-1 to a uint called "id"
-        uint id = zombies.push(Zombie(_name, _dna)) - 1;
+        uint id = zombies.push(Zombie(_name, _dna, 1, uint32(now + cooldownTime))) - 1;
 
           //updating the "zombieToOwner" mapping to store msg.sender under that "id"
         zombieToOwner[id] = msg.sender;
