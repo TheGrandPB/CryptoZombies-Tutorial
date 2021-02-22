@@ -36,16 +36,27 @@ contract ZombieFeeding is ZombieFactory {
         //sets kittyContract equal to KittyInterface
         kittyContract = KittyInterface(_address);
   }
-
+    // an internal function called "_triggerCooldown" w/ (1) argument "_zombie" a Zombie storage pointer
     function _triggerCooldown(Zombie storage _zombie) internal {
+      //sets _zombie.readyTime to uint32(now + cooldownTime)
       _zombie.readyTime = uint32(now + cooldownTime);
+    }
+
+    //an internal viewable function called "_isReady" w/ (1) argument "_zombie"
+      //returns a bool that determins whether 
+        //_zombie.readyTime is <= now is either true/false
+          //this function wil tell us if enough time has passed since the last time the zombie fed
+    function _isReady(Zombie storage _zombie) internal view returns (bool) {
+        return (_zombie.readyTime <= now);
+
     }
 
 
 
-
-    //a public function called "feedAndMultiply" w/ (3) parameters
-  function feedAndMultiply(uint _zombieId, uint _targetDna, string memory _species) public {
+    //a internal function called "feedAndMultiply" w/ (3) parameters
+      //public => internal to make it more secure
+        //prevents users to be able to call this function w/ any DNA they want
+  function feedAndMultiply(uint _zombieId, uint _targetDna, string memory _species) internal {
 
       //verifies that the feeder of our zombies is the owner of the zombies
         // why is [_zombieId] required after zombieToOwner....(?)
@@ -54,8 +65,12 @@ contract ZombieFeeding is ZombieFactory {
       //obtains zombie's DNA by declaring a local Zombie called "myZombie"
       //"myZombie" is a pointer to the "zombies" array in storage
       //var myZombie is set equal to index "_zombieId" w/in our "zombies" array
+        //essentially this looks up myZombie in the zombies array (?)
       Zombie storage myZombie = zombies[_zombieId];
-      
+
+      //checks if zombie's cooldown time is over before initiating feedAndMultiply function 
+      require (_isReady(myZombie));
+
       //ensures that the new "targetDna" isn't longer than than 16 digits
         //takes targetDna modulus dnaModulus
       _targetDna = _targetDna % dnaModulus;
@@ -76,6 +91,9 @@ contract ZombieFeeding is ZombieFactory {
       
       //calls the _createZombie function (refer back to zombiefactory.sol for original parameters) w/ (2) newly defined parameters
       _createZombie("NoName", newDna);
+
+      //calls the _triggerCooldown(myZombie) function so that feeding triggers the zombie's cooldown time
+      _triggerCooldown(myZombie);
   }
   //declaring a public function called "feedOnKitty" with two uint arguments
   function feedOnKitty(uint _zombieId, uint _kittyId) public {

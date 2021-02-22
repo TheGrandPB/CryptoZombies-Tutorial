@@ -20,7 +20,7 @@ contract ZombieFactory is Ownable {
         string name;
         uint dna;
         uint32 level;
-        uint32 readyTime;
+        uint32 readyT+ime;
     }
     //creating a public dynamic array called "zombies"
     Zombie[] public zombies;
